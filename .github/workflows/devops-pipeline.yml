@@ -57,6 +57,13 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
+      - name: Count HIGH & CRITICAL vulnerabilities
+        run: |
+          echo "🔎 Calcul du nombre de vulnérabilités HIGH et CRITICAL..."
+          count=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="HIGH" or .Severity=="CRITICAL")] | length' trivy-report.json)
+          echo "⚠️ Nombre de vulnérabilités HIGH+CRITICAL: $count"
+          echo "VULNERABILITIES_COUNT=$count" >> $GITHUB_ENV
+
       - name: Upload Trivy report
         uses: actions/upload-artifact@v4
         with:
