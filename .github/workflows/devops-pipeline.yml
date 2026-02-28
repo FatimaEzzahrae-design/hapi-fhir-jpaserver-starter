@@ -73,9 +73,23 @@ jobs:
           echo "Nombre de vulnérabilités détectées : $VULN_COUNT"
 
       # 🚀 Push métrique vers Prometheus Pushgateway
-      - name: Push Trivy metrics to Pushgateway
+      - name: Start Pushgateway
         run: |
-           curl --data-binary @metrics.prom "${{ secrets.PUSHGATEWAY_URL }}"
+          echo "🟢 Démarrage de Pushgateway local..."
+          docker run -d -p 9091:9091 --name pushgateway prom/pushgateway
+
+      - name: Push Trivy metrics
+        run: |
+          echo "🔎 Envoi des métriques Trivy vers Pushgateway..."
+          curl --data-binary @metrics.prom http://localhost:9091/metrics
+
+      - name: Stop Pushgateway
+        if: always()
+        run: |
+          echo "🛑 Arrêt de Pushgateway..."
+          docker stop pushgateway
+          docker rm pushgateway
+          
       # 📦 Sauvegarde du rapport Trivy
       - name: Upload Trivy report
         uses: actions/upload-artifact@v4
