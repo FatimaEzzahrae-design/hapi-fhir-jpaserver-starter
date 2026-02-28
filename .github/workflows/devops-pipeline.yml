@@ -81,7 +81,7 @@ jobs:
       - name: Push Trivy metrics
         run: |
           echo "🔎 Envoi des métriques Trivy vers Pushgateway..."
-          curl --data-binary @metrics.prom http://localhost:9091/#
+          curl --data-binary @metrics.prom http://127.0.0.1:9091/metrics/job/trivy_scan
 
       - name: Stop Pushgateway
         if: always()
