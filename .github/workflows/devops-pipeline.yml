@@ -48,6 +48,7 @@ jobs:
         run: |
           docker build -t fatimaezahraafras/hapi-fhir-jpaserver:latest .
 
+      # 🔐 Scan sécurité avec Trivy
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -57,13 +58,27 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      - name: Count HIGH & CRITICAL vulnerabilities
+      # 📊 Calcul du nombre de vulnérabilités
+      - name: Calcul du nombre de vulnérabilités
         run: |
-          echo "🔎 Calcul du nombre de vulnérabilités HIGH et CRITICAL..."
-          count=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="HIGH" or .Severity=="CRITICAL")] | length' trivy-report.json)
-          echo "⚠️ Nombre de vulnérabilités HIGH+CRITICAL: $count"
-          echo "VULNERABILITIES_COUNT=$count" >> $GITHUB_ENV
+          echo "🔎 Calcul des vulnérabilités HIGH et CRITICAL..."
+          VULN_COUNT=$(jq '
+            [.Results[]? 
+              | .Vulnerabilities[]? 
+              | select(.Severity=="HIGH" or .Severity=="CRITICAL")
+            ] | length
+          ' trivy-report.json)
 
+          echo "trivy_vulnerabilities_total $VULN_COUNT" > metrics.prom
+          echo "Nombre de vulnérabilités détectées : $VULN_COUNT"
+
+      # 🚀 Push métrique vers Prometheus Pushgateway
+      - name: Push métrique vers Prometheus Pushgateway
+        run: |
+          curl --data-binary @metrics.prom \
+          http://<IP_PUSHGATEWAY>:9091/metrics/job/trivy_scan
+
+      # 📦 Sauvegarde du rapport Trivy
       - name: Upload Trivy report
         uses: actions/upload-artifact@v4
         with:
@@ -83,4 +98,4 @@ jobs:
     steps:
       - name: Deployment step
         run: |
-          echo "Déploiement prêt (SSH / Kubernetes / VM à configurer)"
+          echo "Déploiement prêt (Kubernetes / VM / SSH)"
