@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -29,13 +29,13 @@ jobs:
       - name: Run tests
         run: mvn test
 
-  docker:
-    name: Build, Scan & Save Trivy Metrics
+  docker-and-trivy:
+    name: Build, Scan Docker Image & Generate CSV
     runs-on: ubuntu-latest
     needs: build-and-test
 
     steps:
-      - name: Checkout source code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Login to Docker Hub
@@ -45,10 +45,8 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Docker image
-        run: |
-          docker build -t fatimaezahraafras/hapi-fhir-jpaserver:latest .
+        run: docker build -t fatimaezahraafras/hapi-fhir-jpaserver:latest .
 
-      # 🔐 Scan sécurité avec Trivy
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -58,50 +56,31 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      # 📊 Calcul du nombre de vulnérabilités et sauvegarde CSV
-      - name: Calculate Trivy vulnerabilities and save CSV
+      # 🔄 Convert JSON Trivy report to CSV
+      - name: Generate CSV from Trivy JSON
         run: |
-          echo "🔎 Calcul des vulnérabilités HIGH et CRITICAL..."
-          VULN_COUNT=$(jq '
-            [.Results[]? 
-              | .Vulnerabilities[]? 
-              | select(.Severity=="HIGH" or .Severity=="CRITICAL")
-            ] | length
-          ' trivy-report.json)
+          VULN_COUNT=$(jq '[.Results[]? | .Vulnerabilities[]? | select(.Severity=="HIGH" or .Severity=="CRITICAL")] | length' trivy-report.json)
+          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          echo "date,vuln_count" > trivy_metrics.csv
+          echo "$DATE,$VULN_COUNT" >> trivy_metrics.csv
+          cat trivy_metrics.csv
 
-          echo "Nombre de vulnérabilités détectées : $VULN_COUNT"
-
-          # Crée ou ajoute le CSV
-          if [ ! -f trivy_metrics.csv ]; then
-            echo "date,vuln_count" > trivy_metrics.csv
-          fi
-          echo "$(date +%Y-%m-%dT%H:%M:%S),$VULN_COUNT" >> trivy_metrics.csv
-
-      # 📦 Sauvegarde du rapport Trivy
-      - name: Upload Trivy report
-        uses: actions/upload-artifact@v4
-        with:
-          name: trivy-report
-          path: trivy-report.json
-
-      # 📦 Upload des métriques CSV pour Grafana
-      - name: Upload Trivy metrics CSV
+      - name: Upload CSV and JSON as Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: trivy-metrics
-          path: trivy_metrics.csv
+          path: |
+            trivy_metrics.csv
+            trivy-report.json
 
       - name: Push Docker image
-        run: |
-          docker push fatimaezahraafras/hapi-fhir-jpaserver:latest
+        run: docker push fatimaezahraafras/hapi-fhir-jpaserver:latest
 
   deploy:
     name: Deploy (placeholder)
     runs-on: ubuntu-latest
-    needs: docker
+    needs: docker-and-trivy
     if: github.ref == 'refs/heads/master'
-
     steps:
       - name: Deployment step
-        run: |
-          echo "Déploiement prêt (Kubernetes / VM / SSH)"
+        run: echo "Déploiement prêt (Kubernetes / VM / SSH)"
