@@ -1,4 +1,4 @@
-name: DevOps CI/CD Pipeline
+name: DevSecOps CI/CD Pipeline
 
 on:
   push:
@@ -29,8 +29,8 @@ jobs:
       - name: Run tests
         run: mvn test
 
-  docker-and-trivy:
-    name: Build, Scan Docker Image & Generate CSV
+  security-scan:
+    name: Docker Build, Trivy Scan & Security Metrics
     runs-on: ubuntu-latest
     needs: build-and-test
 
@@ -56,22 +56,23 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      # 🔄 Convert JSON Trivy report to CSV
-      - name: Generate CSV from Trivy JSON
-        run: |
-          VULN_COUNT=$(jq '[.Results[]? | .Vulnerabilities[]? | select(.Severity=="HIGH" or .Severity=="CRITICAL")] | length' trivy-report.json)
-          DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          echo "date,vuln_count" > trivy_metrics.csv
-          echo "$DATE,$VULN_COUNT" >> trivy_metrics.csv
-          cat trivy_metrics.csv
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-      - name: Upload CSV and JSON as Artifacts
+      - name: Update vulnerability history and MTTR
+        run: |
+          python .github/workflows/update_vuln_history.py trivy-report.json vuln_history.json
+
+      - name: Upload security artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: trivy-metrics
+          name: security-metrics
           path: |
-            trivy_metrics.csv
             trivy-report.json
+            vuln_history.json
+            vuln_metrics.csv
 
       - name: Push Docker image
         run: docker push fatimaezahraafras/hapi-fhir-jpaserver:latest
@@ -79,8 +80,9 @@ jobs:
   deploy:
     name: Deploy (placeholder)
     runs-on: ubuntu-latest
-    needs: docker-and-trivy
+    needs: security-scan
     if: github.ref == 'refs/heads/master'
+
     steps:
       - name: Deployment step
         run: echo "Déploiement prêt (Kubernetes / VM / SSH)"
