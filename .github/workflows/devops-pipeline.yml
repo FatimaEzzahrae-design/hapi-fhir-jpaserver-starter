@@ -30,7 +30,7 @@ jobs:
         run: mvn test
 
   docker:
-    name: Build, Scan & Push Docker Image
+    name: Build, Scan & Save Trivy Metrics
     runs-on: ubuntu-latest
     needs: build-and-test
 
@@ -58,8 +58,8 @@ jobs:
           severity: HIGH,CRITICAL
           exit-code: 0
 
-      # 📊 Calcul du nombre de vulnérabilités
-      - name: Calcul du nombre de vulnérabilités
+      # 📊 Calcul du nombre de vulnérabilités et sauvegarde CSV
+      - name: Calculate Trivy vulnerabilities and save CSV
         run: |
           echo "🔎 Calcul des vulnérabilités HIGH et CRITICAL..."
           VULN_COUNT=$(jq '
@@ -69,26 +69,13 @@ jobs:
             ] | length
           ' trivy-report.json)
 
-          echo "trivy_vulnerabilities_total $VULN_COUNT" > metrics.prom
           echo "Nombre de vulnérabilités détectées : $VULN_COUNT"
 
-      # 🚀 Push métrique vers Prometheus Pushgateway
-      - name: Start Pushgateway
-        run: |
-          echo "🟢 Démarrage de Pushgateway local..."
-          docker run -d -p 9091:9091 --name pushgateway prom/pushgateway
-
-      - name: Push Trivy metrics
-        run: |
-          echo "🔎 Envoi des métriques Trivy vers Pushgateway..."
-          curl --data-binary @metrics.prom http://127.0.0.1:9091/metrics/job/trivy_scan
-
-      - name: Stop Pushgateway
-        if: always()
-        run: |
-          echo "🛑 Arrêt de Pushgateway..."
-          docker stop pushgateway
-          docker rm pushgateway
+          # Crée ou ajoute le CSV
+          if [ ! -f trivy_metrics.csv ]; then
+            echo "date,vuln_count" > trivy_metrics.csv
+          fi
+          echo "$(date +%Y-%m-%dT%H:%M:%S),$VULN_COUNT" >> trivy_metrics.csv
 
       # 📦 Sauvegarde du rapport Trivy
       - name: Upload Trivy report
@@ -96,6 +83,13 @@ jobs:
         with:
           name: trivy-report
           path: trivy-report.json
+
+      # 📦 Upload des métriques CSV pour Grafana
+      - name: Upload Trivy metrics CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-metrics
+          path: trivy_metrics.csv
 
       - name: Push Docker image
         run: |
