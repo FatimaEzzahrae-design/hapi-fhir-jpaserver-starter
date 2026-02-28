@@ -81,7 +81,7 @@ jobs:
       - name: Push Trivy metrics
         run: |
           echo "🔎 Envoi des métriques Trivy vers Pushgateway..."
-          curl --data-binary @metrics.prom http://localhost:9091/metrics
+          curl --data-binary @metrics.prom http://localhost:9091/#
 
       - name: Stop Pushgateway
         if: always()
@@ -89,7 +89,7 @@ jobs:
           echo "🛑 Arrêt de Pushgateway..."
           docker stop pushgateway
           docker rm pushgateway
-          
+
       # 📦 Sauvegarde du rapport Trivy
       - name: Upload Trivy report
         uses: actions/upload-artifact@v4
