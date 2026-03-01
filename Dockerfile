@@ -35,7 +35,7 @@ COPY --from=build-hapi --chown=65532:65532 /tmp/hapi-fhir-jpaserver-starter/targ
 COPY --from=build-hapi --chown=65532:65532 /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
 
 ########### distroless brings focus on security and runs on plain spring boot - this is the default image
-FROM gcr.io/distroless/java21-debian12:nonroot AS default
+FROM gcr.io/distroless/java21-debian13:nonroot AS default
 # 65532 is the nonroot user's uid
 # used here instead of the name to allow Kubernetes to easily detect that the container
 # is running as a non-root (uid != 0) user.
@@ -47,18 +47,4 @@ COPY --chown=nonroot:nonroot --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/
 
 ENTRYPOINT ["java", "--class-path", "/app/main.war", "-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
 
-FROM debian:12
 
-# Installer les outils de build
-RUN apt-get update && apt-get install -y build-essential wget && \
-    rm -rf /var/lib/apt/lists/*
-
-# Télécharger et compiler zlib 1.3.1 corrigé
-RUN wget -O zlib-1.3.1.tar.gz https://sources.voidlinux.org/zlib-1.3.1/zlib-1.3.1.tar.gz && \
-    tar xzf zlib-1.3.1.tar.gz && \
-    cd zlib-1.3.1 && \
-    ./configure && \
-    make && \
-    make install && \
-    cd .. && \
-    rm -rf zlib-1.3.1*
