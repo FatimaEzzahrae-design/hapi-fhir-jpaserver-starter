@@ -55,8 +55,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Télécharger et compiler zlib sécurisé
-RUN wget https://github.com/madler/zlib/archive/refs/tags/v1.2.14.tar.gz && \
-    tar xzf v1.2.14.tar.gz && \
+RUN wget -O zlib-1.2.14.tar.gz https://codeload.github.com/madler/zlib/tar.gz/refs/tags/v1.2.14 && \
+    tar xzf zlib-1.2.14.tar.gz && \
     cd zlib-1.2.14 && \
     ./configure && \
     make && \
