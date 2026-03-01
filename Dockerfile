@@ -53,11 +53,12 @@ FROM debian:12
 RUN apt-get update && apt-get install -y build-essential wget && \
     rm -rf /var/lib/apt/lists/*
 
-# Télécharger et compiler zlib 1.3.1 (avec correctifs)
-RUN wget -O zlib-1.3.1.tar.gz https://zlib.net/zlib-1.3.1.tar.gz && \
+# Télécharger et compiler zlib 1.3.1 corrigé
+RUN wget -O zlib-1.3.1.tar.gz https://sources.voidlinux.org/zlib-1.3.1/zlib-1.3.1.tar.gz && \
     tar xzf zlib-1.3.1.tar.gz && \
     cd zlib-1.3.1 && \
     ./configure && \
     make && \
     make install && \
-    cd .. && rm -rf zlib-1.3.1*
+    cd .. && \
+    rm -rf zlib-1.3.1*
