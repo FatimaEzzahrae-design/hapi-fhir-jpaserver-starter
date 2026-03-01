@@ -49,15 +49,15 @@ ENTRYPOINT ["java", "--class-path", "/app/main.war", "-Dloader.path=main.war!/WE
 
 FROM debian:12
 
-# Installer les outils nécessaires pour compiler zlib
-RUN apt-get update && \
-    apt-get install -y build-essential wget && \
+# Installer les outils de build
+RUN apt-get update && apt-get install -y build-essential wget && \
     rm -rf /var/lib/apt/lists/*
 
-# Télécharger et compiler zlib sécurisé
-RUN wget -O zlib-1.2.14.tar.gz https://codeload.github.com/madler/zlib/tar.gz/refs/tags/v1.2.14 && \
-    tar xzf zlib-1.2.14.tar.gz && \
-    cd zlib-1.2.14 && \
+# Télécharger et compiler zlib 1.3.1 (avec correctifs)
+RUN wget -O zlib-1.3.1.tar.gz https://zlib.net/zlib-1.3.1.tar.gz && \
+    tar xzf zlib-1.3.1.tar.gz && \
+    cd zlib-1.3.1 && \
     ./configure && \
     make && \
-    make install
+    make install && \
+    cd .. && rm -rf zlib-1.3.1*
