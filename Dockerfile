@@ -46,3 +46,18 @@ COPY --chown=nonroot:nonroot --from=build-distroless /app /app
 COPY --chown=nonroot:nonroot --from=build-hapi /tmp/hapi-fhir-jpaserver-starter/opentelemetry-javaagent.jar /app
 
 ENTRYPOINT ["java", "--class-path", "/app/main.war", "-Dloader.path=main.war!/WEB-INF/classes/,main.war!/WEB-INF/,/app/extra-classes", "org.springframework.boot.loader.PropertiesLauncher"]
+
+FROM debian:12
+
+# Installer les outils nécessaires pour compiler zlib
+RUN apt-get update && \
+    apt-get install -y build-essential wget && \
+    rm -rf /var/lib/apt/lists/*
+
+# Télécharger et compiler zlib sécurisé
+RUN wget https://github.com/madler/zlib/archive/refs/tags/v1.2.14.tar.gz && \
+    tar xzf v1.2.14.tar.gz && \
+    cd zlib-1.2.14 && \
+    ./configure && \
+    make && \
+    make install
