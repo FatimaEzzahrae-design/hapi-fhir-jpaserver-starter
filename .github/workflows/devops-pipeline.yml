@@ -56,6 +56,23 @@ jobs:
           output: trivy-report.json
           exit-code: 1
 
+      - name: Generate vulnerability metrics CSV (no script)
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          COUNT=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-report.json)
+
+          echo "date,vulnerabilities" > vuln_metrics.csv
+          echo "$DATE,$COUNT" >> vuln_metrics.csv
+
+          echo "Fichier généré :"
+          cat vuln_metrics.csv
+
+      - name: Upload security metrics
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-metrics
+          path: vuln_metrics.csv
+
       - name: Upload Trivy report
         uses: actions/upload-artifact@v4
         with:
