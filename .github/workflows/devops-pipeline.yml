@@ -30,7 +30,7 @@ jobs:
         run: mvn test
 
   security-scan:
-    name: Docker Build, Trivy Scan & Security Metrics
+    name: Docker Build & Trivy Security Scan
     runs-on: ubuntu-latest
     needs: build-and-test
 
@@ -56,23 +56,11 @@ jobs:
           output: trivy-report.json
           exit-code: 1
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Update vulnerability history and MTTR
-        run: |
-          python .github/workflows/update_vuln_history.py trivy-report.json vuln_history.json
-
-      - name: Upload security artifacts
+      - name: Upload Trivy report
         uses: actions/upload-artifact@v4
         with:
-          name: security-metrics
-          path: |
-            trivy-report.json
-            vuln_history.json
-            vuln_metrics.csv
+          name: trivy-report
+          path: trivy-report.json
 
       - name: Push Docker image
         run: docker push fatimaezahraafras/hapi-fhir-jpaserver:latest
