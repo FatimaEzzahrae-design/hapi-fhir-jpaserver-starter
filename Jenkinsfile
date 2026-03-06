@@ -3,12 +3,12 @@ pipeline {
 
     stages {
         stage('Checkout Code') {
-            steps {
-                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', 
-                    branch: 'master', 
-                    credentialsId: 'github-pat'
-            }
-        }
+    steps {
+        git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver-starter.git', 
+            branch: 'master', 
+            credentialsId: 'github-pat'
+    }
+}
 
         stage('Build Project') {
             steps {
