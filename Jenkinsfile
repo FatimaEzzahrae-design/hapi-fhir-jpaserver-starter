@@ -11,16 +11,22 @@ pipeline {
 }
 
         stage('Build Project') {
-            steps {
-                bat 'mvn clean package'
-            }
+    steps {
+        script {
+            def mvnHome = tool name: 'Maven3', type: 'maven'
+            bat "\"${mvnHome}\\bin\\mvn\" clean package -DskipTests"
         }
+    }
+}
 
-        stage('Run Tests') {
-            steps {
-                bat 'mvn test'
-            }
+stage('Run Tests') {
+    steps {
+        script {
+            def mvnHome = tool name: 'Maven3', type: 'maven'
+            bat "\"${mvnHome}\\bin\\mvn\" test"
         }
+    }
+}
 
         stage('Build Docker Image') {
             steps {
