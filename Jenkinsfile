@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     stages {
-
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', branch: 'master', credentialsId: 'github-pat'
+                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', 
+                    branch: 'master', 
+                    credentialsId: 'github-pat'
             }
         }
 
@@ -23,7 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build fatimaezahraafras/hapi-fhir-jpaserver:latest'
+                bat 'docker build -t fatimaezahraafras/hapi-fhir-jpaserver:latest .'
             }
         }
 
@@ -38,6 +39,5 @@ pipeline {
                 bat 'kubectl apply -f k8s'
             }
         }
-
     }
 }
