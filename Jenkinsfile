@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', branch: 'master'
+                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', branch: 'master', credentialsId: 'github-pat'
             }
         }
 
