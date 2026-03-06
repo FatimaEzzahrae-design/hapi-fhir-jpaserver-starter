@@ -36,10 +36,10 @@ stage('Run Tests') {
 
         stage('SonarQube Analysis') {
     steps {
-        withSonarQubeEnv('SonarQubeLocal') { // Nom défini dans Jenkins SonarQube server
+        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONARQUBE_TOKEN')]) {
             script {
                 def mvnHome = tool name: 'Maven3', type: 'maven'
-                bat "\"${mvnHome}\\bin\\mvn\" sonar:sonar -Dsonar.projectKey=hapi-fhir-jpaserver -Dsonar.host.url=http://localhost:9000 -Dsonar.login=sqa_9e331f3efa2f8a1cb5beefe3ea613f5409c8b949"
+                bat "\"${mvnHome}\\bin\\mvn\" sonar:sonar -Dsonar.projectKey=hapi-fhir-jpaserver -Dsonar.host.url=http://localhost:9000 -Dsonar.login=%SONARQUBE_TOKEN%"
             }
         }
     }
