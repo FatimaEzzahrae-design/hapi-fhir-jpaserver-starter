@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git url: 'https://github.com/ton-repo.git', branch: 'main'
+                git url: 'https://github.com/FatimaEzzahrae-design/hapi-fhir-jpaserver.git', branch: 'master'
             }
         }
 
@@ -23,13 +23,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t mon-image:latest .'
+                bat 'docker build fatimaezahraafras/hapi-fhir-jpaserver:latest'
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                bat 'docker push mon-image:latest'
+                bat 'docker push fatimaezahraafras/hapi-fhir-jpaserver:latest'
             }
         }
 
