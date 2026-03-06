@@ -12,7 +12,7 @@ pipeline {
 
         stage('Build Project') {
             steps {
-                bat 'mvnw clean package'
+                bat 'mvn clean package'
             }
         }
 
