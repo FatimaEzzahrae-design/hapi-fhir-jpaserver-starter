@@ -36,7 +36,6 @@ stage('Run Tests') {
 
         stage('Deploy Kubernetes') {
             steps {
-                // Assurez-vous que votre deployment Kubernetes utilise imagePullPolicy: Never
                 bat 'kubectl apply -f k8s'
             }
         }
