@@ -62,8 +62,7 @@ jobs:
           sudo apt-get install -y unzip curl
           VERSION=9.2.0
           curl -L -o dependency-check.zip \
-            "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}.zip"
-          # Vérifier que le fichier ZIP est correct
+            "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}-release.zip"
           ls -lh dependency-check.zip
           unzip -q dependency-check.zip
           rm dependency-check.zip
