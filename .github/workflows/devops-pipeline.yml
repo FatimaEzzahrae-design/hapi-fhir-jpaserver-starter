@@ -48,9 +48,8 @@ jobs:
       - name: Run Semgrep (SAST)
         uses: returntocorp/semgrep-action@v1
         with:
-          config: p/ci         # règle prédéfinie pour CI
-          output: semgrep-report.sarif  # génère un rapport SARIF
-
+          config: p/ci         
+          args: --sarif semgrep-report.sarif
       - name: Upload Semgrep report
         uses: actions/upload-artifact@v4
         with:
