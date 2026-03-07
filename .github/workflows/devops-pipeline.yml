@@ -56,6 +56,26 @@ jobs:
           name: semgrep-report
           path: semgrep-report.sarif
 
+      - name: Download Dependency Check
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip curl
+          VERSION=9.2.0
+          curl -L --retry 5 --retry-delay 2 -o dependency-check.zip \
+          "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}.zip"
+          unzip -q dependency-check.zip
+          rm dependency-check.zip
+
+      - name: Run Dependency Check (stable mode, no update)
+        continue-on-error: true
+        run: |
+          ./dependency-check/bin/dependency-check.sh \
+            --project "hapi-fhir" \
+            --scan . \
+            --format HTML \
+            --out dependency-check-report \
+            --noupdate
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
