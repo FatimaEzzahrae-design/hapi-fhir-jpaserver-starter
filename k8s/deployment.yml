@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hapi-fhir
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hapi-fhir
+  template:
+    metadata:
+      labels:
+        app: hapi-fhir
+    spec:
+      containers:
+        - name: hapi-fhir
+          image: fatimaezahraafras/hapi-fhir-jpaserver:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
