@@ -63,15 +63,14 @@ jobs:
           VERSION=9.2.0
           curl -L -o dependency-check.zip \
             "https://github.com/jeremylong/DependencyCheck/releases/download/v${VERSION}/dependency-check-${VERSION}-release.zip"
-          ls -lh dependency-check.zip
           unzip -q dependency-check.zip
           rm dependency-check.zip
+          ls -lh dependency-check  # vérifier le contenu
 
       - name: Run Dependency Check
         continue-on-error: true
         run: |
-          VERSION=9.2.0
-          ./dependency-check-${VERSION}/bin/dependency-check.sh \
+          ./dependency-check/bin/dependency-check.sh \
             --project "hapi-fhir" \
             --scan . \
             --format HTML \
