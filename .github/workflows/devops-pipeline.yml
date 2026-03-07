@@ -69,7 +69,7 @@ jobs:
       - name: Run Dependency Check (stable mode, no update)
         continue-on-error: true
         run: |
-          ./dependency-check/bin/dependency-check.sh \
+          ./dependency-check-${VERSION}/bin/dependency-check.sh \
             --project "hapi-fhir" \
             --scan . \
             --format HTML \
